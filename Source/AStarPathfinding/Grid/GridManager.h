@@ -12,8 +12,6 @@ class ASTARPATHFINDING_API AGridManager : public AActor
 
 public:
 	AGridManager();
-	
-	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
 	int32 GridSizeX;
@@ -22,12 +20,16 @@ public:
 	int32 GridSizeY;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
-	float GridCellSize;
+	float CellSize;
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 private:
+	static constexpr float DEFAULT_CELL_SIZE = 100.0f;
+	static constexpr int32 DEFAULT_GRID_SIZE = 10;
+
 	UPROPERTY()
 	TArray<FGridNode> Grid;
 
@@ -37,6 +39,7 @@ private:
 
 	void Initialize();
 	void DrawGrid();
+	void ClearDebugLines();
 
 	FVector GridOrigin;
 };
