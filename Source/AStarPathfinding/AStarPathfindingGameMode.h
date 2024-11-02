@@ -13,6 +13,8 @@ class AAStarPathfindingGameMode : public AGameModeBase
 
 public:
 	AAStarPathfindingGameMode();
+
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 };
 
 
