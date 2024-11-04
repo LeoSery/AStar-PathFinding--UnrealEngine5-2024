@@ -5,8 +5,50 @@ AGridManager::AGridManager()
     : GridSizeX(DEFAULT_GRID_SIZE)
     , GridSizeY(DEFAULT_GRID_SIZE)
     , CellSize(DEFAULT_CELL_SIZE)
+    , LastHighlightedNodeX(-1)
+    , LastHighlightedNodeY(-1)
+    , bHasHighlightedNode(false)
 {
     PrimaryActorTick.bCanEverTick = false;
+}
+
+bool AGridManager::GetCellFromWorldPosition(const FVector& WorldPosition, int32& OutX, int32& OutY) const
+{
+    FVector RelativePosition = WorldPosition - GridOrigin;
+    OutX = FMath::FloorToInt(RelativePosition.X / CellSize);
+    OutY = FMath::FloorToInt(RelativePosition.Y / CellSize);
+    return IsValidPos(OutX, OutY);
+}
+
+FVector AGridManager::GetWorldPositionFromCell(int32 X, int32 Y) const
+{
+    return GridOrigin + FVector(
+        (X + 0.5f) * CellSize,
+        (Y + 0.5f) * CellSize,
+        0.0f
+    );
+}
+
+void AGridManager::DebugDrawCell(int32 X, int32 Y, FColor Color, float Duration)
+{
+    if (!IsValidPos(X, Y) || !GetWorld())
+    {
+        return;
+    }
+
+    FVector CenterPosition = GetWorldPositionFromCell(X, Y);
+    FVector Extent(CellSize * 0.45f, CellSize * 0.45f, 50.0f);
+    
+    DrawDebugBox(
+        GetWorld(),
+        CenterPosition,
+        Extent,
+        Color,
+        false,
+        Duration,
+        0,
+        2.0f
+    );
 }
 
 void AGridManager::BeginPlay()
@@ -71,6 +113,19 @@ void AGridManager::ClearDebugLines()
         FlushPersistentDebugLines(GetWorld());
     }
 }
+
+bool AGridManager::IsNodeAlreadyHighlighted(int32 X, int32 Y) const
+{
+    return bHasHighlightedNode && LastHighlightedNodeX == X && LastHighlightedNodeY == Y;
+}
+
+void AGridManager::UpdateHighlightedCell(int32 X, int32 Y)
+{
+    LastHighlightedNodeX = X;
+    LastHighlightedNodeY = Y;
+    bHasHighlightedNode = true;
+}
+
 
 void AGridManager::DrawGrid()
 {
