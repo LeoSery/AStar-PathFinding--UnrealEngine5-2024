@@ -7,25 +7,28 @@ USTRUCT(BlueprintType)
 struct FGridNode
 {
 	GENERATED_BODY()
-
-	// Position in the world
+	
+	//////// FIELDS ////////
+	//// Position fields
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector WorldPosition;
-    
-	// Is the node crossable
+
+	//// State fields
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsCrossable;
-    
-	// A* Node cost
+
+	//// A* Pathfinding fields
 	float CostFromStart;
 	float CostToGoal;
 	FGridNode* PreviousNode;
 
+	//////// CONSTRUCTOR ////////
 	FGridNode() : WorldPosition(FVector::ZeroVector), IsCrossable(true) , CostFromStart(0.f), CostToGoal(0.f), PreviousNode(nullptr)
 	{
 		
 	}
 
+	//////// METHODS ////////
 	float GetFCost() const
 	{
 		return CostFromStart + CostToGoal;

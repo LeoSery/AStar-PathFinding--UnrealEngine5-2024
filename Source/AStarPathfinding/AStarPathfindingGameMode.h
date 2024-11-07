@@ -12,8 +12,10 @@ class AAStarPathfindingGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	//////// CONSTRUCTOR ////////
 	AAStarPathfindingGameMode();
 
+	//////// OVERRIDES ////////
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 };
 

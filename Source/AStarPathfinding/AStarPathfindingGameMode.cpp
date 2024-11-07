@@ -8,6 +8,7 @@
 
 AAStarPathfindingGameMode::AAStarPathfindingGameMode()
 {
+	// Try to find and assign the custom camera pawn
 	static ConstructorHelpers::FClassFinder<APawn> GridCameraPawnClass(TEXT("/Game/TopDown/Blueprints/BP_GridFreeCamera"));
 	if (GridCameraPawnClass.Class != nullptr)
 	{
@@ -16,12 +17,14 @@ AAStarPathfindingGameMode::AAStarPathfindingGameMode()
 	}
 	else
 	{
+		// Fallback to default spectator pawn if custom camera not found
 		UE_LOG(LogTemp, Error, TEXT("Failed to find BP_GridCamera"));
 		DefaultPawnClass = ASpectatorPawn::StaticClass();
 	}
 	
 	PlayerControllerClass = AAStarPathfindingPlayerController::StaticClass();
-    
+
+	// Try to find and assign the custom player controller blueprint
 	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(TEXT("/Game/TopDown/Blueprints/BP_TopDownPlayerController"));
 	if(PlayerControllerBPClass.Class != NULL)
 	{
