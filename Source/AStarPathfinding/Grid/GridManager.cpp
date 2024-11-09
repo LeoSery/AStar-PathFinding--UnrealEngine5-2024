@@ -37,6 +37,13 @@ void AGridManager::DebugDrawCell(int32 X, int32 Y, FColor Color, float Duration)
         0,
         2.0f
     );
+
+    UpdateHighlightedCell(X, Y);
+}
+
+FVector AGridManager::GetHighlightedCellWorldPosition() const
+{
+    return GetWorldPositionFromCell(LastHighlightedNodeX, LastHighlightedNodeY);
 }
 
 bool AGridManager::GetCellFromWorldPosition(const FVector& WorldPosition, int32& OutX, int32& OutY) const

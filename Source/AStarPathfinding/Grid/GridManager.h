@@ -48,6 +48,8 @@ public:
 	bool GetCellFromWorldPosition(const FVector& WorldPosition, int32& OutX, int32& OutY) const;
 	UFUNCTION(BlueprintCallable, Category = "Grid Debug")
 	void DebugDrawCell(int32 X, int32 Y, FColor Color = FColor::Green, float Duration = 1.0f);
+	UFUNCTION(BlueprintCallable, Category = "Grid")
+	FVector GetHighlightedCellWorldPosition() const;
 
 	//// Nodes methods
 	UFUNCTION(BlueprintCallable, Category = "Grid|Interaction")
