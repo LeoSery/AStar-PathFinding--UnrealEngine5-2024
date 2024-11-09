@@ -46,6 +46,32 @@ FVector AGridManager::GetHighlightedCellWorldPosition() const
     return GetWorldPositionFromCell(LastHighlightedNodeX, LastHighlightedNodeY);
 }
 
+EGridActorType AGridManager::GetNodeTypeAtPosition(const FVector& WorldPosition) const
+{
+    int32 GridX, GridY;
+    if (!GetCellFromWorldPosition(WorldPosition, GridX, GridY))
+    {
+        return EGridActorType::None;
+    }
+    
+    if (StartNode && StartNode->GridX == GridX && StartNode->GridY == GridY)
+    {
+        return EGridActorType::Start;
+    }
+    
+    if (GoalNode && GoalNode->GridX == GridX && GoalNode->GridY == GridY)
+    {
+        return EGridActorType::Goal;
+    }
+    
+    if (WallNodes.Contains(FIntPoint(GridX, GridY)))
+    {
+        return EGridActorType::Wall;
+    }
+
+    return EGridActorType::None;
+}
+
 bool AGridManager::GetCellFromWorldPosition(const FVector& WorldPosition, int32& OutX, int32& OutY) const
 {
     FVector RelativePosition = WorldPosition - GridOrigin;
@@ -61,28 +87,66 @@ bool AGridManager::PlaceNodeActorInGrid(const FVector& WorldPosition)
     {
         return false;
     }
+
+    FIntPoint Point(GridX, GridY);
     
-    RemoveExistingNodeActorAtCell(GridX, GridY);
+    EGridActorType existingType = GetNodeTypeAtPosition(WorldPosition);
+    if (existingType == CurrentPlacementType)
+    {
+        if (StartNode && StartNode->GridX == GridX && StartNode->GridY == GridY)
+        {
+            StartNode->Destroy();
+            StartNode = nullptr;
+        }
+        if (GoalNode && GoalNode->GridX == GridX && GoalNode->GridY == GridY)
+        {
+            GoalNode->Destroy();
+            GoalNode = nullptr;
+        }
+        if (WallNodes.Contains(Point))
+        {
+            WallNodes[Point]->Destroy();
+            WallNodes.Remove(Point);
+        }
+        GetNode(GridX, GridY).IsCrossable = true;
+        return true;
+    }
+    
+    if (StartNode && StartNode->GridX == GridX && StartNode->GridY == GridY)
+    {
+        StartNode->Destroy();
+        StartNode = nullptr;
+    }
+    if (GoalNode && GoalNode->GridX == GridX && GoalNode->GridY == GridY)
+    {
+        GoalNode->Destroy();
+        GoalNode = nullptr;
+    }
+    if (WallNodes.Contains(Point))
+    {
+        WallNodes[Point]->Destroy();
+        WallNodes.Remove(Point);
+    }
+    GetNode(GridX, GridY).IsCrossable = true;
     
     TSubclassOf<AGridNodeActorBase> ClassToSpawn = nullptr;
     switch (CurrentPlacementType)
     {
     case EGridActorType::Start:
+        if (StartNode) StartNode->Destroy();
         ClassToSpawn = StartNodeClass;
         break;
     case EGridActorType::Goal:
+        if (GoalNode) GoalNode->Destroy();
         ClassToSpawn = GoalNodeClass;
         break;
     case EGridActorType::Wall:
         ClassToSpawn = WallNodeClass;
         break;
-    }
-
-    if (!ClassToSpawn)
-    {
+    default:
         return false;
     }
-    
+
     AGridNodeActorBase* NewActor = SpawnNodeActor(ClassToSpawn, GridX, GridY);
     if (!NewActor)
     {
@@ -92,17 +156,13 @@ bool AGridManager::PlaceNodeActorInGrid(const FVector& WorldPosition)
     switch (CurrentPlacementType)
     {
     case EGridActorType::Start:
-        if (StartNode) StartNode->Destroy();
         StartNode = NewActor;
         break;
-            
     case EGridActorType::Goal:
-        if (GoalNode) GoalNode->Destroy();
         GoalNode = NewActor;
         break;
-            
     case EGridActorType::Wall:
-        WallNodes.Add(FIntPoint(GridX, GridY), NewActor);
+        WallNodes.Add(Point, NewActor);
         GetNode(GridX, GridY).IsCrossable = false;
         break;
     }

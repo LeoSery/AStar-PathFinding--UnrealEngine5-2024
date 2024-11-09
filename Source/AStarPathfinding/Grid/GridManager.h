@@ -46,11 +46,13 @@ public:
 	FVector GetWorldPositionFromCell(int32 X, int32 Y) const;
 	UFUNCTION(BlueprintCallable, Category = "Grid")
 	bool GetCellFromWorldPosition(const FVector& WorldPosition, int32& OutX, int32& OutY) const;
-	UFUNCTION(BlueprintCallable, Category = "Grid Debug")
+	UFUNCTION(BlueprintCallable, Category = "Grid|Debug")
 	void DebugDrawCell(int32 X, int32 Y, FColor Color = FColor::Green, float Duration = 1.0f);
 	UFUNCTION(BlueprintCallable, Category = "Grid")
 	FVector GetHighlightedCellWorldPosition() const;
-
+	UFUNCTION(BlueprintCallable, Category = "Grid")
+	EGridActorType GetNodeTypeAtPosition(const FVector& WorldPosition) const;
+	
 	//// Nodes methods
 	UFUNCTION(BlueprintCallable, Category = "Grid|Interaction")
 	bool PlaceNodeActorInGrid(const FVector& WorldPosition);
