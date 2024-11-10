@@ -3,13 +3,23 @@
 
 AGridManager::AGridManager()
     : GridSizeX(DEFAULT_GRID_SIZE)
-    , GridSizeY(DEFAULT_GRID_SIZE)
-    , CellSize(DEFAULT_CELL_SIZE)
-    , LastHighlightedNodeX(-1)
-    , LastHighlightedNodeY(-1)
-    , bHasHighlightedNode(false)
+      , GridSizeY(DEFAULT_GRID_SIZE)
+      , CellSize(DEFAULT_CELL_SIZE)
+      , InteractionDistance(0), InteractionRate(0), CurrentPlacementType(), LastHighlightedNodeX(-1)
+      , LastHighlightedNodeY(-1)
+      , bHasHighlightedNode(false), StartNode(nullptr), GoalNode(nullptr)
 {
     PrimaryActorTick.bCanEverTick = false;
+}
+
+bool AGridManager::StaticIsValidPos(int32 X, int32 Y, int32 GridSizeX, int32 GridSizeY)
+{
+    return static_cast<uint32>(X) < static_cast<uint32>(GridSizeX) && static_cast<uint32>(Y) < static_cast<uint32>(GridSizeY);
+}
+
+int32 AGridManager::StaticGetIndexFromXY(int32 X, int32 Y, int32 GridSizeX)
+{
+    return Y * GridSizeX + X;
 }
 
 FVector AGridManager::GetWorldPositionFromCell(int32 X, int32 Y) const
@@ -197,12 +207,12 @@ void AGridManager::Tick(float DeltaTime)
 
 int32 AGridManager::GetIndexFromXY(int32 X, int32 Y) const
 {
-    return Y * GridSizeX + X;
+    return StaticGetIndexFromXY(X, Y, GridSizeX);
 }
 
 bool AGridManager::IsValidPos(int32 X, int32 Y) const
 {
-    return static_cast<uint32>(X) < static_cast<uint32>(GridSizeX) && static_cast<uint32>(Y) < static_cast<uint32>(GridSizeY);
+    return StaticIsValidPos(X, Y, GridSizeX, GridSizeY);
 }
 
 FGridNode& AGridManager::GetNode(int32 X, int32 Y)
@@ -229,9 +239,6 @@ void AGridManager::Initialize()
                 GridOrigin.Z
             );
             Node.IsCrossable = true;
-            Node.CostFromStart = 0.0f;
-            Node.CostToGoal = 0.0f;
-            Node.PreviousNode = nullptr;
         }
     }
 }

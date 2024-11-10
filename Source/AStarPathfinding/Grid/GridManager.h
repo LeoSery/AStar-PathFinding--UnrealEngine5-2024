@@ -15,6 +15,10 @@ public:
 	//////// CONSTRUCTOR ////////
 	AGridManager();
 
+	//////// STATIC METHODS ////////
+	static bool StaticIsValidPos(int32 X, int32 Y, int32 GridSizeX, int32 GridSizeY);
+	static int32 StaticGetIndexFromXY(int32 X, int32 Y, int32 GridSizeX);
+	
 	//////// FIELDS ////////
 	//// Grid fields
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid|Settings")
@@ -92,6 +96,7 @@ private:
 	void DrawGrid();
 	void ClearDebugLines();
 
+	/// Grid helper
 	int32 GetIndexFromXY(int32 X, int32 Y) const;
 	bool IsValidPos(int32 X, int32 Y) const;
 	FGridNode& GetNode(int32 X, int32 Y);

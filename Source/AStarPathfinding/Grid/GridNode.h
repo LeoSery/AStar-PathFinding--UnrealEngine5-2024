@@ -17,20 +17,9 @@ struct FGridNode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsCrossable;
 
-	//// A* Pathfinding fields
-	float CostFromStart;
-	float CostToGoal;
-	FGridNode* PreviousNode;
-
 	//////// CONSTRUCTOR ////////
-	FGridNode() : WorldPosition(FVector::ZeroVector), IsCrossable(true) , CostFromStart(0.f), CostToGoal(0.f), PreviousNode(nullptr)
+	FGridNode() : WorldPosition(FVector::ZeroVector), IsCrossable(true)
 	{
 		
-	}
-
-	//////// METHODS ////////
-	float GetFCost() const
-	{
-		return CostFromStart + CostToGoal;
 	}
 };
