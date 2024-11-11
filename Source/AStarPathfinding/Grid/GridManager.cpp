@@ -1,5 +1,6 @@
 ﻿#include "GridManager.h"
 #include "DrawDebugHelpers.h"
+#include "AStarPathfinding/Solver/PathFinder.h"
 
 AGridManager::AGridManager()
     : GridSizeX(DEFAULT_GRID_SIZE)
@@ -10,6 +11,20 @@ AGridManager::AGridManager()
       , bHasHighlightedNode(false), StartNode(nullptr), GoalNode(nullptr)
 {
     PrimaryActorTick.bCanEverTick = false;
+
+    FloorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorMesh"));
+    RootComponent = FloorMesh;
+    
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Engine/BasicShapes/Cube"));
+    if (CubeMeshAsset.Succeeded())
+    {
+        FloorMesh->SetStaticMesh(CubeMeshAsset.Object);
+        
+        FloorMesh->SetCollisionProfileName(TEXT("Default"));
+        FloorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        FloorMesh->SetGenerateOverlapEvents(false);
+        FloorMesh->CanCharacterStepUpOn = ECB_Yes;
+    }
 }
 
 bool AGridManager::StaticIsValidPos(int32 X, int32 Y, int32 GridSizeX, int32 GridSizeY)
@@ -90,7 +105,7 @@ bool AGridManager::GetCellFromWorldPosition(const FVector& WorldPosition, int32&
     return IsValidPos(OutX, OutY);
 }
 
-bool AGridManager::PlaceNodeActorInGrid(const FVector& WorldPosition)
+bool AGridManager::ToggleNodeActorInGrid(const FVector& WorldPosition)
 {
     int32 GridX, GridY;
     if (!GetCellFromWorldPosition(WorldPosition, GridX, GridY))
@@ -100,43 +115,16 @@ bool AGridManager::PlaceNodeActorInGrid(const FVector& WorldPosition)
 
     FIntPoint Point(GridX, GridY);
     
-    EGridActorType existingType = GetNodeTypeAtPosition(WorldPosition);
-    if (existingType == CurrentPlacementType)
+    EGridActorType ExistingType = GetNodeTypeAtPosition(WorldPosition);
+    if (ExistingType == CurrentPlacementType)
     {
-        if (StartNode && StartNode->GridX == GridX && StartNode->GridY == GridY)
-        {
-            StartNode->Destroy();
-            StartNode = nullptr;
-        }
-        if (GoalNode && GoalNode->GridX == GridX && GoalNode->GridY == GridY)
-        {
-            GoalNode->Destroy();
-            GoalNode = nullptr;
-        }
-        if (WallNodes.Contains(Point))
-        {
-            WallNodes[Point]->Destroy();
-            WallNodes.Remove(Point);
-        }
-        GetNode(GridX, GridY).IsCrossable = true;
+        RemoveExistingNodeActorAtCell(GridX, GridY);
+        OnGridChanged.Broadcast();
+        UpdatePathfinding();
         return true;
     }
     
-    if (StartNode && StartNode->GridX == GridX && StartNode->GridY == GridY)
-    {
-        StartNode->Destroy();
-        StartNode = nullptr;
-    }
-    if (GoalNode && GoalNode->GridX == GridX && GoalNode->GridY == GridY)
-    {
-        GoalNode->Destroy();
-        GoalNode = nullptr;
-    }
-    if (WallNodes.Contains(Point))
-    {
-        WallNodes[Point]->Destroy();
-        WallNodes.Remove(Point);
-    }
+    RemoveExistingNodeActorAtCell(GridX, GridY);
     GetNode(GridX, GridY).IsCrossable = true;
     
     TSubclassOf<AGridNodeActorBase> ClassToSpawn = nullptr;
@@ -158,10 +146,7 @@ bool AGridManager::PlaceNodeActorInGrid(const FVector& WorldPosition)
     }
 
     AGridNodeActorBase* NewActor = SpawnNodeActor(ClassToSpawn, GridX, GridY);
-    if (!NewActor)
-    {
-        return false;
-    }
+    if (!NewActor) return false;
     
     switch (CurrentPlacementType)
     {
@@ -177,25 +162,42 @@ bool AGridManager::PlaceNodeActorInGrid(const FVector& WorldPosition)
         break;
     }
 
+    OnGridChanged.Broadcast();
+    UpdatePathfinding();
     return true;
 }
 
-bool AGridManager::RemoveNodeActorFromGrid(const FVector& WorldPosition)
-{
-    int32 GridX, GridY;
-    if (!GetCellFromWorldPosition(WorldPosition, GridX, GridY))
-    {
-        return false;
-    }
-
-    RemoveExistingNodeActorAtCell(GridX, GridY);
-    return true;
-}
+// void AGridManager::BeginPlay()
+// {
+//     Super::BeginPlay();
+//     GridOrigin = GetActorLocation();
+//     Initialize();
+//     DrawGrid();
+// }
 
 void AGridManager::BeginPlay()
 {
     Super::BeginPlay();
-    GridOrigin = GetActorLocation();
+    
+    if (FloorMesh)
+    {
+        FString CollisionProfile = FloorMesh->GetCollisionProfileName().ToString();
+        ECollisionEnabled::Type CollisionType = FloorMesh->GetCollisionEnabled();
+        
+        GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, 
+            FString::Printf(TEXT("Collision Profile: %s"), *CollisionProfile));
+        GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, 
+            FString::Printf(TEXT("Collision Enabled: %d"), static_cast<int32>(CollisionType)));
+        
+        FloorMesh->SetCollisionProfileName(TEXT("BlockAll"));
+        FloorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    }
+    else
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("No FloorMesh in BeginPlay!"));
+    }
+    
+    GridOrigin = FVector::ZeroVector;
     Initialize();
     DrawGrid();
 }
@@ -222,10 +224,12 @@ FGridNode& AGridManager::GetNode(int32 X, int32 Y)
 
 void AGridManager::Initialize()
 {
+    GridOrigin = FVector::ZeroVector;
+    
     const int32 GridSize = GridSizeX * GridSizeY;
     Grid.Empty(GridSize);
     Grid.SetNum(GridSize);
-
+    
     for (int32 y = 0; y < GridSizeY; y++)
     {
         const float YPos = GridOrigin.Y + (y * CellSize);
@@ -241,6 +245,8 @@ void AGridManager::Initialize()
             Node.IsCrossable = true;
         }
     }
+    
+    UpdateFloorMesh();
 }
 
 void AGridManager::ClearDebugLines()
@@ -248,6 +254,19 @@ void AGridManager::ClearDebugLines()
     if (GetWorld())
     {
         FlushPersistentDebugLines(GetWorld());
+    }
+}
+
+void AGridManager::UpdateFloorMesh()
+{
+    if (FloorMesh)
+    {
+        const float TotalWidth = GridSizeX * CellSize;
+        const float TotalHeight = GridSizeY * CellSize;
+        
+        FloorMesh->SetWorldScale3D(FVector(TotalWidth/100.0f, TotalHeight/100.0f, 0.1f));
+        
+        FloorMesh->SetRelativeLocation(FVector(TotalWidth/2.0f, TotalHeight/2.0f, -10.0f));
     }
 }
 
@@ -261,6 +280,21 @@ void AGridManager::UpdateHighlightedCell(int32 X, int32 Y)
     LastHighlightedNodeX = X;
     LastHighlightedNodeY = Y;
     bHasHighlightedNode = true;
+}
+
+AGridNodeActorBase* AGridManager::GetNodeActorAtCell(int32 X, int32 Y) const
+{
+    if (StartNode && StartNode->GridX == X && StartNode->GridY == Y)
+    {
+        return StartNode;
+    }
+        
+    if (GoalNode && GoalNode->GridX == X && GoalNode->GridY == Y)
+    {
+        return GoalNode;
+    }
+        
+    return WallNodes.FindRef(FIntPoint(X, Y));
 }
 
 void AGridManager::RemoveExistingNodeActorAtCell(int32 X, int32 Y)
@@ -306,6 +340,65 @@ AGridNodeActorBase* AGridManager::SpawnNodeActor(TSubclassOf<AGridNodeActorBase>
     }
 
     return NewActor;
+}
+
+void AGridManager::UpdatePathfinding()
+{
+    ClearAllNodeStates();
+    CurrentPath.Empty();
+    ExploredNodes.Empty();
+    
+    if (!StartNode || !GoalNode) return;
+    
+    CurrentPath = PathFinder::Compute(
+        Grid,
+        GridSizeX,
+        GridSizeY,
+        StartNode->GridX,
+        StartNode->GridY,
+        GoalNode->GridX,
+        GoalNode->GridY,
+        CellSize
+    );
+    
+    UpdateNodeStates();
+    OnPathUpdated.Broadcast(CurrentPath, ExploredNodes);
+}
+
+void AGridManager::UpdateNodeStates()
+{
+    for (const auto& PathPoint : CurrentPath)
+    {
+        int32 X, Y;
+        if (GetCellFromWorldPosition(PathPoint, X, Y))
+        {
+            if (AGridNodeActorBase* Node = GetNodeActorAtCell(X, Y))
+            {
+                Node->SetupNodeColor(Node->NodeType, ENodeState::Path);
+            }
+        }
+    }
+}
+
+void AGridManager::ClearAllNodeStates()
+{
+    if (StartNode)
+    {
+        StartNode->SetupNodeColor(EGridActorType::Start);
+    }
+    
+    if (GoalNode)
+    {
+        GoalNode->SetupNodeColor(EGridActorType::Goal);
+    }
+    
+    for (auto& Pair : WallNodes)
+    {
+        if (Pair.Value)
+        {
+            Pair.Value->SetupNodeColor(EGridActorType::Wall);
+        }
+    }
 }
 
 

@@ -6,6 +6,9 @@
 #include "GridNodeActorBase.h"
 #include "GridManager.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGridChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPathUpdated, const TArray<FVector>&, Path, const TArray<FVector>&, ExploredNodes);
+
 UCLASS()
 class ASTARPATHFINDING_API AGridManager : public AActor
 {
@@ -18,6 +21,14 @@ public:
 	//////// STATIC METHODS ////////
 	static bool StaticIsValidPos(int32 X, int32 Y, int32 GridSizeX, int32 GridSizeY);
 	static int32 StaticGetIndexFromXY(int32 X, int32 Y, int32 GridSizeX);
+
+	//////// DELEGATES ////////
+	//// Grid delegates
+	UPROPERTY(BlueprintAssignable, Category = "Grid|Events")
+	FOnGridChanged OnGridChanged;
+    
+	UPROPERTY(BlueprintAssignable, Category = "Grid|Events")
+	FOnPathUpdated OnPathUpdated;
 	
 	//////// FIELDS ////////
 	//// Grid fields
@@ -27,6 +38,9 @@ public:
 	int32 GridSizeY;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid|Settings")
 	float CellSize;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grid|Components")
+	UStaticMeshComponent* FloorMesh;
 
 	//// Interaction fields
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Settings")
@@ -56,12 +70,12 @@ public:
 	FVector GetHighlightedCellWorldPosition() const;
 	UFUNCTION(BlueprintCallable, Category = "Grid")
 	EGridActorType GetNodeTypeAtPosition(const FVector& WorldPosition) const;
+	UFUNCTION(BlueprintCallable, Category = "Grid")
+	void UpdateFloorMesh();
 	
 	//// Nodes methods
 	UFUNCTION(BlueprintCallable, Category = "Grid|Interaction")
-	bool PlaceNodeActorInGrid(const FVector& WorldPosition);
-	UFUNCTION(BlueprintCallable, Category = "Grid|Interaction")
-	bool RemoveNodeActorFromGrid(const FVector& WorldPosition);
+	bool ToggleNodeActorInGrid(const FVector& WorldPosition);
 	
 protected:
 	//////// UNREAL LIFECYCLE ////////
@@ -90,6 +104,10 @@ private:
 	
 	TMap<FIntPoint, AGridNodeActorBase*> WallNodes;
 
+	//// Pathfinding fields
+	TArray<FVector> CurrentPath;
+	TArray<FVector> ExploredNodes;
+
 	//////// METHODS ////////
 	///Grid methods
 	void Initialize();
@@ -102,8 +120,14 @@ private:
 	FGridNode& GetNode(int32 X, int32 Y);
 	bool IsNodeAlreadyHighlighted(int32 X, int32 Y) const;
 	void UpdateHighlightedCell(int32 X, int32 Y);
+	AGridNodeActorBase* GetNodeActorAtCell(int32 X, int32 Y) const;
 
 	//// Nodes methods
 	void RemoveExistingNodeActorAtCell(int32 X, int32 Y);
 	AGridNodeActorBase* SpawnNodeActor(TSubclassOf<AGridNodeActorBase> ActorClass, int32 X, int32 Y);
+
+	//// Pathfinding methods
+	void UpdatePathfinding();
+	void UpdateNodeStates();
+	void ClearAllNodeStates();
 };

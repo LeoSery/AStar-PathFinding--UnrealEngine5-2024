@@ -13,6 +13,16 @@ enum class EGridActorType : uint8
 	None    UMETA(DisplayName = "None")
 };
 
+UENUM(BlueprintType)
+enum class ENodeState : uint8
+{
+	Default     UMETA(DisplayName = "Default"),
+	ToExplore   UMETA(DisplayName = "To Explore"),
+	Explored    UMETA(DisplayName = "Explored"),
+	Path        UMETA(DisplayName = "Path"),
+	Neighbor    UMETA(DisplayName = "Neighbor")
+};
+
 UCLASS(Abstract)
 class ASTARPATHFINDING_API AGridNodeActorBase : public AActor
 {
@@ -31,13 +41,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Grid")
 	EGridActorType NodeType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Grid")
+	ENodeState NodeState;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Grid")
 	int32 GridX;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Grid")
 	int32 GridY;
 
 	//////// METHODS ////////
 	UFUNCTION(BlueprintCallable, Category = "Grid")
-	void SetupNodeColor(EGridActorType Type);
+	void SetupNodeColor(EGridActorType Type, ENodeState State = ENodeState::Default);
 	
 protected:
 	//////// UNREAL LIFECYCLE ////////
