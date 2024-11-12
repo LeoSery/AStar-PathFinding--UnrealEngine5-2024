@@ -51,9 +51,18 @@ public:
 	//////// METHODS ////////
 	UFUNCTION(BlueprintCallable, Category = "Grid")
 	void SetupNodeColor(EGridActorType Type, ENodeState State = ENodeState::Default);
+
+	void UpdatePathFindingNodeColor(ENodeState State);
 	
 protected:
 	//////// UNREAL LIFECYCLE ////////
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	
+private:
+	UPROPERTY()
+	bool bIsBaseColorSet = false;
+
+	void LockBaseColor() { bIsBaseColorSet = true; }
+	bool IsBaseColorSet() const { return bIsBaseColorSet; }
 };

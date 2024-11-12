@@ -376,7 +376,7 @@ void AGridManager::UpdateNodeStates()
         {
             if (AGridNodeActorBase* Node = GetNodeActorAtCell(X, Y))
             {
-                Node->SetupNodeColor(Node->NodeType, ENodeState::Path);
+                Node->UpdatePathFindingNodeColor(ENodeState::Path);
             }
         }
     }

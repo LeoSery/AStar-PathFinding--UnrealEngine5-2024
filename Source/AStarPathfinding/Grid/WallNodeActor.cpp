@@ -8,5 +8,5 @@ AWallNodeActor::AWallNodeActor()
 void AWallNodeActor::BeginPlay()
 {
 	Super::BeginPlay();
-	SetupNodeColor(NodeType);
+	SetupNodeColor(NodeType, ENodeState::Default);
 }

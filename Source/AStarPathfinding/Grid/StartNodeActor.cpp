@@ -8,5 +8,5 @@ AStartNodeActor::AStartNodeActor()
 void AStartNodeActor::BeginPlay()
 {
 	Super::BeginPlay();
-	SetupNodeColor(NodeType);
+	SetupNodeColor(NodeType, ENodeState::Default);
 }
