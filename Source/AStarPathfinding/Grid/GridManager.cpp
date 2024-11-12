@@ -49,12 +49,13 @@ void AGridManager::DebugDrawCell(int32 X, int32 Y, FColor Color, float Duration)
         return;
     }
 
-    FVector CenterPosition = GetWorldPositionFromCell(X, Y);
+    FVector BoxPosition = GetWorldPositionFromCell(X, Y);
+    BoxPosition += FVector(0.0f, 0.0f, CellSize * 0.5f);
     FVector Extent(CellSize * 0.45f, CellSize * 0.45f, 50.0f);
     
     DrawDebugBox(
         GetWorld(),
-        CenterPosition,
+        BoxPosition,
         Extent,
         Color,
         false,
