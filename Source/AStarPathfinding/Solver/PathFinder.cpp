@@ -13,8 +13,10 @@ const TArray<TPair<int32, int32>> PathFinder::Directions =
 };
 
 TArray<FVector> PathFinder::Compute(const TArray<FGridNode>& Grid, int32 GridSizeX, int32 GridSizeY, int32 StartX,
-    int32 StartY, int32 GoalX, int32 GoalY, float CellSize)
+    int32 StartY, int32 GoalX, int32 GoalY, float CellSize, TArray<FVector>& OutExploredNodes)
 {
+    OutExploredNodes.Empty();
+    
     if (!ValidateInputs(StartX, StartY, GoalX, GoalY, GridSizeX, GridSizeY))
     {
         return TArray<FVector>(); // Invalid Start or Goal > Impossible path
@@ -41,6 +43,16 @@ TArray<FVector> PathFinder::Compute(const TArray<FGridNode>& Grid, int32 GridSiz
         }
         
         FPathNode* CurrentNode = FindNodeWithLowestCost(NodesToExplore);
+
+        if (!CurrentNode->IsExplored)
+        {
+            const FVector WorldPos(
+                (CurrentNode->X + 0.5f) * CellSize,
+                (CurrentNode->Y + 0.5f) * CellSize,
+                0.0f
+            );
+            OutExploredNodes.Add(WorldPos);
+        }
         
         if (IsGoalNode(CurrentNode, GoalX, GoalY))
         {

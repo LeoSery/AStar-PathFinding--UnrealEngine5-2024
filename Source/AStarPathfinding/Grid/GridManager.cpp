@@ -344,14 +344,54 @@ AGridNodeActorBase* AGridManager::SpawnNodeActor(TSubclassOf<AGridNodeActorBase>
     return NewActor;
 }
 
+void AGridManager::SpawnPathNode(int32 X, int32 Y, bool bIsFinalPath)
+{
+    if (GetNodeActorAtCell(X, Y) != nullptr)
+    {
+        return;
+    }
+
+    FIntPoint Point(X, Y);
+    
+    if (APathNodeActor* ExistingNode = Cast<APathNodeActor>(PathNodes.FindRef(Point)))
+    {
+        ExistingNode->SetPathNodeType(bIsFinalPath);
+        return;
+    }
+    
+    FVector Location = GetWorldPositionFromCell(X, Y);
+    FTransform SpawnTransform(FRotator::ZeroRotator, Location);
+
+    if (APathNodeActor* NewNode = GetWorld()->SpawnActor<APathNodeActor>(PathNodeClass, SpawnTransform))
+    {
+        NewNode->GridX = X;
+        NewNode->GridY = Y;
+        NewNode->SetPathNodeType(bIsFinalPath);
+        PathNodes.Add(Point, NewNode);
+    }
+}
+
+void AGridManager::ClearPathNodes()
+{
+    for (auto& Pair : PathNodes)
+    {
+        if (Pair.Value)
+        {
+            Pair.Value->Destroy();
+        }
+    }
+    PathNodes.Empty();
+}
+
 void AGridManager::UpdatePathfinding()
 {
-    ClearAllNodeStates();
+    ClearPathNodes();
     CurrentPath.Empty();
     ExploredNodes.Empty();
     
     if (!StartNode || !GoalNode) return;
     
+    TArray<FVector> ExploredPositions;
     CurrentPath = PathFinder::Compute(
         Grid,
         GridSizeX,
@@ -360,49 +400,30 @@ void AGridManager::UpdatePathfinding()
         StartNode->GridY,
         GoalNode->GridX,
         GoalNode->GridY,
-        CellSize
+        CellSize,
+        ExploredNodes
     );
     
-    UpdateNodeStates();
-    OnPathUpdated.Broadcast(CurrentPath, ExploredNodes);
-}
-
-void AGridManager::UpdateNodeStates()
-{
-    for (const auto& PathPoint : CurrentPath)
+    for(const auto& ExploredPos : ExploredNodes)
     {
         int32 X, Y;
-        if (GetCellFromWorldPosition(PathPoint, X, Y))
+        if(GetCellFromWorldPosition(ExploredPos, X, Y))
         {
-            if (AGridNodeActorBase* Node = GetNodeActorAtCell(X, Y))
-            {
-                Node->UpdatePathFindingNodeColor(ENodeState::Path);
-            }
+            SpawnPathNode(X, Y, false);
         }
     }
-}
-
-void AGridManager::ClearAllNodeStates()
-{
-    if (StartNode)
-    {
-        StartNode->SetupNodeColor(EGridActorType::Start);
-    }
     
-    if (GoalNode)
+    for(const auto& PathPos : CurrentPath)
     {
-        GoalNode->SetupNodeColor(EGridActorType::Goal);
-    }
-    
-    for (auto& Pair : WallNodes)
-    {
-        if (Pair.Value)
+        int32 X, Y;
+        if(GetCellFromWorldPosition(PathPos, X, Y))
         {
-            Pair.Value->SetupNodeColor(EGridActorType::Wall);
+            SpawnPathNode(X, Y, true);
         }
     }
-}
 
+    OnPathUpdated.Broadcast(CurrentPath, ExploredNodes);
+}
 
 void AGridManager::DrawGrid()
 {

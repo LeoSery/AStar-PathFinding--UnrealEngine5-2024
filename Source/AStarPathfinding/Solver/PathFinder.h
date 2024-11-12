@@ -39,7 +39,8 @@ public:
         int32 StartY,
         int32 GoalX,
         int32 GoalY,
-        float CellSize
+        float CellSize,
+        TArray<FVector>& OutExploredNodes
     );
 
 private:

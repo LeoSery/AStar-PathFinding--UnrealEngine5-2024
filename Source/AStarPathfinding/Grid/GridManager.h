@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "GridNode.h"
 #include "GridNodeActorBase.h"
+#include "PathNodeActor.h"
 #include "GridManager.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGridChanged);
@@ -57,6 +58,8 @@ public:
 	TSubclassOf<AGridNodeActorBase> GoalNodeClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Grid|Nodes")
 	TSubclassOf<AGridNodeActorBase> WallNodeClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Grid|Nodes") 
+	TSubclassOf<AGridNodeActorBase> PathNodeClass;
 
 	//////// METHODS ////////
 	//// Grid methods
@@ -103,7 +106,8 @@ private:
 	AGridNodeActorBase* GoalNode;
 	
 	TMap<FIntPoint, AGridNodeActorBase*> WallNodes;
-
+	TMap<FIntPoint, APathNodeActor*> PathNodes;
+	
 	//// Pathfinding fields
 	TArray<FVector> CurrentPath;
 	TArray<FVector> ExploredNodes;
@@ -126,8 +130,9 @@ private:
 	void RemoveExistingNodeActorAtCell(int32 X, int32 Y);
 	AGridNodeActorBase* SpawnNodeActor(TSubclassOf<AGridNodeActorBase> ActorClass, int32 X, int32 Y);
 
+	void SpawnPathNode(int32 X, int32 Y, bool bIsFinalPath);
+	void ClearPathNodes();
+
 	//// Pathfinding methods
 	void UpdatePathfinding();
-	void UpdateNodeStates();
-	void ClearAllNodeStates();
 };

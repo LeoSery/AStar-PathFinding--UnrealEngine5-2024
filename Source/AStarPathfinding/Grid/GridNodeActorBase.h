@@ -10,6 +10,7 @@ enum class EGridActorType : uint8
 	Start   UMETA(DisplayName = "Start Point"),
 	Goal    UMETA(DisplayName = "Goal Point"),
 	Wall    UMETA(DisplayName = "Wall"),
+	Path	UMETA(DisplayName = "Path"),
 	None    UMETA(DisplayName = "None")
 };
 

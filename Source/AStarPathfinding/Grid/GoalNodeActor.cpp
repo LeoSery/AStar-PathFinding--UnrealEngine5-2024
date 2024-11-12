@@ -7,7 +7,6 @@ AGoalNodeActor::AGoalNodeActor()
 
 void AGoalNodeActor::BeginPlay()
 {
-	NodeType = EGridActorType::Goal;
 	Super::BeginPlay();
 	SetupNodeColor(NodeType, ENodeState::Default);
 }

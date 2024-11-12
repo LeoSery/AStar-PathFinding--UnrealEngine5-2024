@@ -33,13 +33,16 @@ void AGridNodeActorBase::SetupNodeColor(EGridActorType Type, ENodeState State)
             switch(Type)
             {
             case EGridActorType::Start:
-                Color = FLinearColor::Green;
+                Color = FLinearColor(0.0f, 0.0f, 1.0f); // RoyalBlue
                 break;
             case EGridActorType::Goal:
-                Color = FLinearColor::Blue;
+                Color = FLinearColor(1.0f, 0.686f, 0.0f); // Gold
                 break;
             case EGridActorType::Wall:
-                Color = FLinearColor(0.2f, 0.2f, 0.2f);
+                Color = FLinearColor(0.2f, 0.2f, 0.2f); // DarkGray
+                break;
+            case EGridActorType::Path:
+                Color = FLinearColor(1.0f, 0.5f, 0.0f); // Orange
                 break;
             default:
                 Color = FLinearColor::White;
@@ -51,17 +54,18 @@ void AGridNodeActorBase::SetupNodeColor(EGridActorType Type, ENodeState State)
             switch(State)
             {
             case ENodeState::ToExplore:
-                Color = FLinearColor::Yellow;
+                Color = FLinearColor(0.941f, 0.502f, 0.502f); // Orange
                 break;
             case ENodeState::Explored:
-                Color = FLinearColor(0.5f, 0.5f, 0.5f);
+                Color = FLinearColor(1.0f, 1.0f, 0.0f); // Red
                 break;
             case ENodeState::Path:
-                Color = FLinearColor(0.0f, 1.0f, 0.0f);
+                Color = FLinearColor(0.565f, 0.933f, 0.565f); // LightGreen
                 break;
             case ENodeState::Neighbor:
-                Color = FLinearColor(0.0f, 1.0f, 1.0f);
+                Color = FLinearColor(1.0f, 0.5f, 0.0f); // LightBlue
                 break;
+                
             default:
                 Color = FLinearColor::White;
             }
