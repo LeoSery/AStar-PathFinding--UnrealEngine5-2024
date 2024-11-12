@@ -12,19 +12,19 @@ AGridManager::AGridManager()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    FloorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorMesh"));
-    RootComponent = FloorMesh;
-    
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Engine/BasicShapes/Cube"));
-    if (CubeMeshAsset.Succeeded())
-    {
-        FloorMesh->SetStaticMesh(CubeMeshAsset.Object);
-        
-        FloorMesh->SetCollisionProfileName(TEXT("Default"));
-        FloorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        FloorMesh->SetGenerateOverlapEvents(false);
-        FloorMesh->CanCharacterStepUpOn = ECB_Yes;
-    }
+    // FloorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorMesh"));
+    // RootComponent = FloorMesh;
+    //
+    // static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Engine/BasicShapes/Cube"));
+    // if (CubeMeshAsset.Succeeded())
+    // {
+    //     FloorMesh->SetStaticMesh(CubeMeshAsset.Object);
+    //     
+    //     FloorMesh->SetCollisionProfileName(TEXT("Default"));
+    //     FloorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    //     FloorMesh->SetGenerateOverlapEvents(false);
+    //     FloorMesh->CanCharacterStepUpOn = ECB_Yes;
+    // }
 }
 
 bool AGridManager::StaticIsValidPos(int32 X, int32 Y, int32 GridSizeX, int32 GridSizeY)
@@ -167,40 +167,41 @@ bool AGridManager::ToggleNodeActorInGrid(const FVector& WorldPosition)
     return true;
 }
 
-// void AGridManager::BeginPlay()
-// {
-//     Super::BeginPlay();
-//     GridOrigin = GetActorLocation();
-//     Initialize();
-//     DrawGrid();
-// }
-
 void AGridManager::BeginPlay()
 {
     Super::BeginPlay();
-    
-    if (FloorMesh)
-    {
-        FString CollisionProfile = FloorMesh->GetCollisionProfileName().ToString();
-        ECollisionEnabled::Type CollisionType = FloorMesh->GetCollisionEnabled();
-        
-        GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, 
-            FString::Printf(TEXT("Collision Profile: %s"), *CollisionProfile));
-        GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, 
-            FString::Printf(TEXT("Collision Enabled: %d"), static_cast<int32>(CollisionType)));
-        
-        FloorMesh->SetCollisionProfileName(TEXT("BlockAll"));
-        FloorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    }
-    else
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("No FloorMesh in BeginPlay!"));
-    }
-    
+    GridOrigin = GetActorLocation();
     GridOrigin = FVector::ZeroVector;
     Initialize();
     DrawGrid();
 }
+
+// void AGridManager::BeginPlay()
+// {
+//     Super::BeginPlay();
+//     
+//     if (FloorMesh)
+//     {
+//         FString CollisionProfile = FloorMesh->GetCollisionProfileName().ToString();
+//         ECollisionEnabled::Type CollisionType = FloorMesh->GetCollisionEnabled();
+//         
+//         GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, 
+//             FString::Printf(TEXT("Collision Profile: %s"), *CollisionProfile));
+//         GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, 
+//             FString::Printf(TEXT("Collision Enabled: %d"), static_cast<int32>(CollisionType)));
+//         
+//         FloorMesh->SetCollisionProfileName(TEXT("BlockAll"));
+//         FloorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+//     }
+//     else
+//     {
+//         GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("No FloorMesh in BeginPlay!"));
+//     }
+//     
+//     GridOrigin = FVector::ZeroVector;
+//     Initialize();
+//     DrawGrid();
+// }
 
 void AGridManager::Tick(float DeltaTime)
 {
@@ -246,7 +247,7 @@ void AGridManager::Initialize()
         }
     }
     
-    UpdateFloorMesh();
+    //UpdateFloorMesh();
 }
 
 void AGridManager::ClearDebugLines()
@@ -257,18 +258,18 @@ void AGridManager::ClearDebugLines()
     }
 }
 
-void AGridManager::UpdateFloorMesh()
-{
-    if (FloorMesh)
-    {
-        const float TotalWidth = GridSizeX * CellSize;
-        const float TotalHeight = GridSizeY * CellSize;
-        
-        FloorMesh->SetWorldScale3D(FVector(TotalWidth/100.0f, TotalHeight/100.0f, 0.1f));
-        
-        FloorMesh->SetRelativeLocation(FVector(TotalWidth/2.0f, TotalHeight/2.0f, -10.0f));
-    }
-}
+// void AGridManager::UpdateFloorMesh()
+// {
+//     if (FloorMesh)
+//     {
+//         const float TotalWidth = GridSizeX * CellSize;
+//         const float TotalHeight = GridSizeY * CellSize;
+//         
+//         FloorMesh->SetWorldScale3D(FVector(TotalWidth/100.0f, TotalHeight/100.0f, 0.1f));
+//         
+//         FloorMesh->SetRelativeLocation(FVector(TotalWidth/2.0f, TotalHeight/2.0f, -10.0f));
+//     }
+// }
 
 bool AGridManager::IsNodeAlreadyHighlighted(int32 X, int32 Y) const
 {

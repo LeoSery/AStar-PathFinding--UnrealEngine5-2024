@@ -39,8 +39,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid|Settings")
 	float CellSize;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grid|Components")
-	UStaticMeshComponent* FloorMesh;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grid|Components")
+	// UStaticMeshComponent* FloorMesh;
 
 	//// Interaction fields
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Settings")
@@ -70,8 +70,8 @@ public:
 	FVector GetHighlightedCellWorldPosition() const;
 	UFUNCTION(BlueprintCallable, Category = "Grid")
 	EGridActorType GetNodeTypeAtPosition(const FVector& WorldPosition) const;
-	UFUNCTION(BlueprintCallable, Category = "Grid")
-	void UpdateFloorMesh();
+	// UFUNCTION(BlueprintCallable, Category = "Grid")
+	// void UpdateFloorMesh();
 	
 	//// Nodes methods
 	UFUNCTION(BlueprintCallable, Category = "Grid|Interaction")
