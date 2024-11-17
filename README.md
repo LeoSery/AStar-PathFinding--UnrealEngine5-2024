@@ -2,7 +2,7 @@
 
 This project is a student project implementing the ***A* Pathfinding Algorithm***, realized in **C++ with Unreal Engine 5** for my Master's 2 degree in game development. It's an interactive visualization where users can create **obstacles**, place **start** and **end** points, and observe the algorithm **finding the optimal path in real-time**. The project focuses on core A* implementation and basic **visualization**.
 
-![AStarPathFinding_](./ReadmeContent/DemoScreenshots/AStarPathFinding_Screen_1.png)
+![AStarPathFinding](./ReadmeContent/DemoScreenshots/AStarPathFinding_Screen_1.png)
 
 ## Summary
 
@@ -50,6 +50,7 @@ More about "*A* Pathfinding Algorithm*" [Here](https://en.wikipedia.org/wiki/A*_
 ## Project pictures
 
 ![GameOfLife3D_Screen_1](./ReadmeContent/TechnicalDemoGifs/AStarPathFinding_Demo_1.gif)
+![GameOfLife3D_Screen_2](./ReadmeContent/TechnicalDemoGifs/AStarPathFinding_Demo_2.gif)
 
 ## Technical Section
 
@@ -106,7 +107,8 @@ This structure handles the logical state of each grid position, *independent of 
 
 ### 2. Grid Management System
 
-The [`GridManager`](/Source/AStarPathfinding/Grid/GridManager.h) handles grid visualization and coordinate management:
+The [`GridManager`](/Source/AStarPathfinding/Grid/GridManager.h) handles grid visualization and coordinate management.
+The grid (visual part) is just a simple “*DebugDrawLine*” to visualize the grid :
 
 ```cpp
 void AGridManager::DrawGrid()
@@ -151,6 +153,8 @@ Key Helper Methods:
 The [`PathFinder`](/Source/AStarPathfinding/Solver/PathFinder.cpp) class implements the A* algorithm. Let's break down the main components:
 
 #### Main Algorithm
+
+This initial phase validates inputs and prepares the data structures needed for pathfinding.
 ```cpp
 static TArray<FVector> PathFinder::Compute(/* ... */)
 {
@@ -166,8 +170,8 @@ static TArray<FVector> PathFinder::Compute(/* ... */)
     TArray<FPathNode*> NodesToExplore;
     SetupStartNode(PathNodes, NodesToExplore, StartX, StartY, GoalX, GoalY, GridSizeX);
 ```
-This initial phase validates inputs and prepares the data structures needed for pathfinding.
 
+The main loop continuously explores nodes, starting with the most promising one (lowest F cost).
 ```cpp
     // Main exploration loop
     while (!NodesToExplore.IsEmpty())
@@ -181,8 +185,8 @@ This initial phase validates inputs and prepares the data structures needed for 
         
         CurrentNode->IsExplored = true;
 ```
-The main loop continuously explores nodes, starting with the most promising one (lowest F cost).
 
+For each **node**, we examine all possible **neighbors** and update their **costs**.
 ```cpp
         // Neighbor exploration
         for (const auto& Direction : Directions)
@@ -192,7 +196,6 @@ The main loop continuously explores nodes, starting with the most promising one 
         }
     }
 ```
-For each **node**, we examine all possible **neighbors** and update their **costs**.
 
 Key Helper Methods:
 - `FindNodeWithLowestCost()`: Selects the next node to explore based on *F* cost (*G* + *H*)
