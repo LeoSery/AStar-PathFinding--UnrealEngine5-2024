@@ -1,10 +1,13 @@
-# AStar-PathFinding--UnrealEngine5-2024
+# A*-PathFinding--UnrealEngine5-2024
 
 This project is a student project implementing the ***A* Pathfinding Algorithm***, realized in **C++ with Unreal Engine 5** for my Master's 2 degree in game development. It's an interactive visualization where users can create **obstacles**, place **start** and **end** points, and observe the algorithm **finding the optimal path in real-time**. The project focuses on core A* implementation and basic **visualization**.
+
+![AStarPathFinding_](./ReadmeContent/DemoScreenshots/AStarPathFinding_Screen_1.gif)
 
 ## Summary
 
 - [Project pitch](#project-pitch)
+- [Project pictures](#project-pictures)
 - [Technical Section](#technical-section)
 - [How to play the demo](#how-to-play-the-demo)
 - [Possible improvements](#possible-improvements)
@@ -25,6 +28,7 @@ More about "*A* Pathfinding Algorithm*" [Here](https://en.wikipedia.org/wiki/A*_
 - Visual feedback of explored nodes and final path
 
 **Controls:**
+
 *Movement:*
 - Forward > `Z`
 - Left > `Q`
@@ -42,6 +46,10 @@ More about "*A* Pathfinding Algorithm*" [Here](https://en.wikipedia.org/wiki/A*_
 - `1` > Select ***StartNode***
 - `2` > Select ***EndNode***
 - `3` > Select ***WallNode***
+
+## Project pictures
+
+![GameOfLife3D_Screen_1](./ReadmeContent/TechnicalDemoGifs/AStarPathFinding_Demo_1.gif)
 
 ## Technical Section
 
