@@ -2,7 +2,7 @@
 
 This project is a student project implementing the ***A* Pathfinding Algorithm***, realized in **C++ with Unreal Engine 5** for my Master's 2 degree in game development. It's an interactive visualization where users can create **obstacles**, place **start** and **end** points, and observe the algorithm **finding the optimal path in real-time**. The project focuses on core A* implementation and basic **visualization**.
 
-![AStarPathFinding_](./ReadmeContent/DemoScreenshots/AStarPathFinding_Screen_1.gif)
+![AStarPathFinding_](./ReadmeContent/DemoScreenshots/AStarPathFinding_Screen_1.png)
 
 ## Summary
 
